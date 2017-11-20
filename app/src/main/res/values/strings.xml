@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">HereMark</string>
+
+    <string name="add_new_location">I\'m Here! Mark!</string>
+    <string name="action_settings">Settings</string>
+    <string name="service_not_available">Service not available</string>
+    <string name="invalid_lat_long">Invalid latitude and longitude</string>
+    <string name="no_address_found">No address found</string>
+    <string name="address_found">Address found</string>
+    <string name="no_entry">\n\nOOPS!\nNo location marked\n\nTap add button to create one!</string>
+    <string name="loc_permit_required">To mark a new location entry, permission for location is required!</string>
+    <string name="got_it">Got it</string>
+</resources>
