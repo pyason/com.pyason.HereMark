@@ -229,6 +229,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
+
     }
 
     @Override
@@ -257,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     protected LocationRequest createLocationRequest() {
 
-        mLocationRequest = new LocationRequest();
+        mLocationRequest = LocationRequest.create();
 
         mLocationRequest.setInterval(8000);
         mLocationRequest.setFastestInterval(5000);
