@@ -10,4 +10,5 @@
     <string name="no_entry">\n\nOOPS!\nNo location marked\n\nTap add button to create one!</string>
     <string name="loc_permit_required">To mark a new location entry, permission for location is required!</string>
     <string name="got_it">Got it</string>
+    <string name="select_location">Please select a location</string>
 </resources>

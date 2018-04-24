@@ -44,6 +44,7 @@ import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationListener;
@@ -102,9 +103,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
             fragmentTransaction.add(R.id.list_frame, listFragment, FRAGMENT_TAG).commit();
         }
-        /*FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.list_frame, listFragment);
-        fragmentTransaction.commit();*/
 
 
         Toolbar toolbar = findViewById(R.id.tool_bar);
@@ -118,10 +116,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             @Override
             public void onClick(View v) {
                 if (checkAirPlaneMode(getApplicationContext())) {
-                    Toast.makeText(getApplicationContext(), "Air Plane Mode is ON, Please turn off to get location", Toast.LENGTH_LONG).show();
+                    Snackbar.make(findViewById(R.id.coordinator_layout), "Air Plane Mode is ON, Please turn off to get location", Snackbar.LENGTH_LONG).show();
                 }
                 else if (!checkNetwork()) {
-                    Toast.makeText(getApplicationContext(),"Unable to reach network, please check network settings",Toast.LENGTH_LONG).show();
+                    Snackbar.make(findViewById(R.id.coordinator_layout), "Unable to reach network, please check network settings", Snackbar.LENGTH_LONG).show();
                 }
                 else {
                     checkLocationSettings(MainActivity.this);
@@ -189,6 +187,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onPause() {
         super.onPause();
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+
     }
 
     @Override
@@ -377,7 +376,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @SuppressLint("ParcelCreator")
     public class AddressResultReceiver extends ResultReceiver {
-        public AddressResultReceiver(Handler handler) {
+        AddressResultReceiver(Handler handler) {
             super(handler);
         }
 
