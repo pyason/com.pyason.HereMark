@@ -77,7 +77,7 @@ public class AddressLookUpService extends IntentService {
             deliverResultToReceiver(Constants.FAIL, errorMsg);
         }
         else {
-            ArrayList<String> addressFragments = new ArrayList<String>();
+            ArrayList<String> addressResults = new ArrayList<String>();
 
             /*for (Address address : addressList) {
                 for (int i=0; i<address.getMaxAddressLineIndex(); i++) {
@@ -88,13 +88,13 @@ public class AddressLookUpService extends IntentService {
             Address address = addressList.get(0);
 
             for (int i=0; i<=address.getMaxAddressLineIndex(); i++) {
-                addressFragments.add(address.getAddressLine(i));
+                addressResults.add(address.getAddressLine(i));
             }
 
             Log.i(TAG, getString(R.string.address_found) + address.getAddressLine(0));
 
-            String addrsssss = TextUtils.join(System.getProperty("line.separator"), addressFragments);
-            deliverResultToReceiver(Constants.SUCCESS, TextUtils.join(System.getProperty("line.separator"), addressFragments));
+            String addrsssss = TextUtils.join(System.getProperty("line.separator"), addressResults);
+            deliverResultToReceiver(Constants.SUCCESS, addressResults.toArray(new CharSequence[addressResults.size()]));
         }
     }
 
@@ -110,6 +110,12 @@ public class AddressLookUpService extends IntentService {
     private void deliverResultToReceiver(int resultCode, String message) {
         Bundle bundle = new Bundle();
         bundle.putString(Constants.RESULT_DATA_KEY, message);
+        receiver.send(resultCode, bundle);
+    }
+
+    private void deliverResultToReceiver(int resultCode, CharSequence[] message) {
+        Bundle bundle = new Bundle();
+        bundle.putCharSequenceArray(Constants.RESULT_DATA_KEY, message);
         receiver.send(resultCode, bundle);
     }
 

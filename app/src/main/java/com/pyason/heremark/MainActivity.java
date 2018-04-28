@@ -74,10 +74,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private double currentLatitude, currentLongitude;
     protected String lastUpdateTime, addressMessage = null;
+    protected CharSequence[] addressMessageList = null;
     private AddressResultReceiver resultReceiver;
     public boolean mAddressRequested = false;
 
     private final String FRAGMENT_TAG = "main_list_tag";
+    private final String SELECT_ADDR_TAG = "addr_select_tag";
     private static final int REQUEST_LOCATION = 0;
     protected static final int REQUEST_CHECK_SETTINGS = 1;
 
@@ -124,24 +126,23 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 else {
                     checkLocationSettings(MainActivity.this);
                     mAddressRequested = true;
-                    dialog = new MaterialDialog(MainActivity.this)
-                            .setTitle("Select an address")
-                            .setMessage(addressMessage)
-                            .setPositiveButton("SELECT", new View.OnClickListener() {
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+                    builder.setTitle(R.string.select_location)
+                            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                                 @Override
-                                public void onClick(View v) {
-                                    dialog.dismiss();
-                                    listFragment.list.add(addressMessage);
-                                    listFragment.mAdapter.notifyDataSetChanged();
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    //AddressChooserDialogFragment.this.getDialog().dismiss();
                                 }
                             })
-                            .setNegativeButton("CANCEL", new View.OnClickListener() {
+                            .setItems(addressMessageList, new DialogInterface.OnClickListener() {
                                 @Override
-                                public void onClick(View v) {
-                                    dialog.dismiss();
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    listFragment.list.add((String)addressMessageList[i]);
+                                    listFragment.mAdapter.notifyDataSetChanged();
                                 }
                             });
-                    dialog.show();
+                    builder.create().show();
                 }
             }
         });
@@ -385,7 +386,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         @Override
         protected void onReceiveResult(int resultCode, Bundle result) {
             if (resultCode == AddressLookUpService.Constants.SUCCESS) {
-                addressMessage = result.getString(AddressLookUpService.Constants.RESULT_DATA_KEY);
+                //addressMessage = result.getString(AddressLookUpService.Constants.RESULT_DATA_KEY);
+                addressMessageList = result.getCharSequenceArray(AddressLookUpService.Constants.RESULT_DATA_KEY);
             }
         }
     }
