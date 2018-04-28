@@ -117,6 +117,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                checkLocationSettings(MainActivity.this);
+                
                 if (checkAirPlaneMode(getApplicationContext())) {
                     Snackbar.make(findViewById(R.id.coordinator_layout), "Air Plane Mode is ON, Please turn off to get location", Snackbar.LENGTH_LONG).show();
                 }
@@ -124,10 +126,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     Snackbar.make(findViewById(R.id.coordinator_layout), "Unable to reach network, please check network settings", Snackbar.LENGTH_LONG).show();
                 }
                 else {
-                    checkLocationSettings(MainActivity.this);
                     mAddressRequested = true;
 
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle(R.string.select_location)
                             .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                                 @Override
