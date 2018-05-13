@@ -3,13 +3,15 @@
 
     <string name="add_new_location">I\'m Here! Mark!</string>
     <string name="action_settings">Settings</string>
-    <string name="service_not_available">Service not available</string>
-    <string name="invalid_lat_long">Invalid latitude and longitude</string>
-    <string name="no_address_found">No address found</string>
-    <string name="address_found">Address found</string>
+    <string name="service_not_available">Google Play Service is currently unavailable, please check your connections</string>
+    <string name="install_update_play_service">Please make sure Google Play Service is installed and up to date</string>
+    <string name="airplane_mode_on">Air Plane Mode is ON, please turn off to get location</string>
+    <string name="network_unavailable">Unable to reach network, please check network settings</string>
     <string name="no_entry">\n\nOOPS!\nNo location marked\n\nTap add button to create one!</string>
     <string name="loc_permit_required">To mark a new location entry, permission for location is required!</string>
     <string name="got_it">Got it</string>
-    <string name="select_location">Please select a location</string>
+    <string name="enable_location">Location setting is not enabled, do you want to go and set it?</string>
+    <string name="enable_location_title">Location is not enabled</string>
     <string name="cancel">Cancel</string>
+    <string name="select_nearby">Hey, do select nearby places, don\'t make it up!</string>
 </resources>

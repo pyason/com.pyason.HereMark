@@ -14,7 +14,6 @@ import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Looper;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -63,17 +62,14 @@ public class MainActivity extends AppCompatActivity {
     private MainList listFragment;
     private FragmentManager mFragmentManager;
 
-    private double currentLatitude, currentLongitude;
     protected Location currentLocation, selectedLocation;
-    protected String lastUpdateTime, addressMessage = null;
-    protected CharSequence[] addressMessageList = null;
-    protected float currentLikelihoodValue, newLikelihoodValue;
-    protected Place currentPlace, selectedPlace;
+    protected Place selectedPlace;
     protected double maxDistance = 1000;
 
     private final String FRAGMENT_TAG = "main_list_tag";
     private final String G_PLACE_SERVICE_ERROR = "g_places_service_error";
-    private final String CURRENT_PLACE_ERROR = "current_place_error";
+    private final String LOC_SETTING_ERROR = "location_setting_error";
+    private final String PERMISSIONS = "permissions";
     private static final int REQUEST_LOCATION = 0;
     protected static final int REQUEST_CHECK_SETTINGS = 1;
     protected final int PLACE_PICKER_REQUEST = 2;
@@ -91,7 +87,16 @@ public class MainActivity extends AppCompatActivity {
         mLocationRequest.setInterval(60000);
         mLocationRequest.setFastestInterval(10000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationCallback = new LocationCallback();
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                List<Location> locationList = locationResult.getLocations();
+                if (locationList.size()>0) {
+                    //Last location is the latest
+                    currentLocation = locationList.get(locationList.size() - 1);
+                }
+            }
+        };
 
         mFragmentManager = getFragmentManager();
 
@@ -120,64 +125,33 @@ public class MainActivity extends AppCompatActivity {
                         Manifest.permission.ACCESS_FINE_LOCATION)
                         != PackageManager.PERMISSION_GRANTED) {
 
-                    Log.i("Permissions", "Location Permission not granted, request for permission.");
+                    Log.i(PERMISSIONS, "Location Permission not granted, request for permission.");
                     // Should we show an explanation?
                     PermissionUtil.requestForPermissions(MainActivity.this, listFragment, REQUEST_LOCATION);
 
                 }
                 else if (checkAirPlaneMode(getApplicationContext())) {
-                    Snackbar.make(findViewById(R.id.coordinator_layout), "Air Plane Mode is ON, Please turn off to get location", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(findViewById(R.id.coordinator_layout), R.string.airplane_mode_on, Snackbar.LENGTH_LONG).show();
                 }
                 else if (!checkNetwork()) {
-                    Snackbar.make(findViewById(R.id.coordinator_layout), "Unable to reach network, please check network settings", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(findViewById(R.id.coordinator_layout), R.string.network_unavailable, Snackbar.LENGTH_LONG).show();
                 }
                 else {
                     PlacePicker.IntentBuilder placeBuilder = new PlacePicker.IntentBuilder();
                     mFusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null);
-                    mLocationCallback = new LocationCallback() {
-                        @Override
-                        public void onLocationResult(LocationResult locationResult) {
-                            List<Location> locationList = locationResult.getLocations();
-                            if (locationList.size()>0) {
-                                //Last location is the latest
-                                currentLocation = locationList.get(locationList.size() - 1);
-                            }
-                        }
-                    };
 
                     try{
                         startActivityForResult(placeBuilder.build(MainActivity.this), PLACE_PICKER_REQUEST);
                     }
                     catch (GooglePlayServicesNotAvailableException e) {
                         Log.e(G_PLACE_SERVICE_ERROR, "Google places service not availabe...");
-                        Snackbar.make(findViewById(R.id.coordinator_layout), "Google Play Service is currently unavailable, please check your connections", Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(findViewById(R.id.coordinator_layout), R.string.service_not_available, Snackbar.LENGTH_LONG).show();
                     }
                     catch (GooglePlayServicesRepairableException er) {
                         Log.e(G_PLACE_SERVICE_ERROR, "Google places service may not be installed or up to date...");
-                        Snackbar.make(findViewById(R.id.coordinator_layout), "Please make sure you have installed and make sure Google Play service is up to date", Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(findViewById(R.id.coordinator_layout), R.string.install_update_play_service, Snackbar.LENGTH_LONG).show();
                         //TODO: show installation dialog to user
                     }
-
-                    /*Task<PlaceLikelihoodBufferResponse> currentPlaceResult = mPlaceDetectionClient.getCurrentPlace(null);
-                    currentLikelihoodValue = 0;
-                    currentPlaceResult.addOnCompleteListener(new OnCompleteListener<PlaceLikelihoodBufferResponse>() {
-                        @Override
-                        public void onComplete(@NonNull Task<PlaceLikelihoodBufferResponse> task) {
-                            if (task.isSuccessful() && task.getResult() != null) {
-                                PlaceLikelihoodBufferResponse likelyPlaces = task.getResult();
-                                for (PlaceLikelihood placeLikelihood: likelyPlaces) {
-                                    newLikelihoodValue = placeLikelihood.getLikelihood();
-                                    if (newLikelihoodValue > currentLikelihoodValue) {
-                                        currentLikelihoodValue = newLikelihoodValue;
-                                        currentPlace = placeLikelihood.getPlace();
-                                    }
-                                }
-                                likelyPlaces.release();
-                            } else {
-                                Log.e(CURRENT_PLACE_ERROR, "getCurrentPlace is not working...");
-                            }
-                        }
-                    });*/
                 }
             }
         });
@@ -228,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            Log.i("Permissions", "Location Permission not granted, request for permission.");
+            Log.i(PERMISSIONS, "Location Permission not granted, request for permission.");
             // Should we show an explanation?
             PermissionUtil.requestForPermissions(MainActivity.this, listFragment, REQUEST_LOCATION);
 
@@ -239,8 +213,8 @@ public class MainActivity extends AppCompatActivity {
     protected void showLocationSettings() {
         AlertDialog.Builder settingDialog = new AlertDialog.Builder(MainActivity.this);
 
-        settingDialog.setTitle("Location is not enabled");
-        settingDialog.setMessage("Location setting is not enabled, do you want to go and set it?");
+        settingDialog.setTitle(R.string.enable_location_title);
+        settingDialog.setMessage(R.string.enable_location);
 
         settingDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
             @Override
@@ -301,12 +275,12 @@ public class MainActivity extends AppCompatActivity {
                             resolvable.startResolutionForResult(activity, REQUEST_CHECK_SETTINGS);
                         }
                         catch (IntentSender.SendIntentException senderException) {
-                            Log.i("LocationSetting", "Location settings resolution callback failed.");
+                            Log.e(LOC_SETTING_ERROR, "Location settings resolution callback failed.");
                         }
                         break;
 
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                        Log.i("LocationSettings", "Location setting change is unavailable for unkonwn error.");
+                        Log.e(LOC_SETTING_ERROR, "Location setting change is unavailable for unknown error.");
                 }
             }
         });
@@ -317,7 +291,8 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PLACE_PICKER_REQUEST) {
             if (resultCode == RESULT_OK) {
-                 selectedPlace = PlacePicker.getPlace(this, data);
+                String displayNameAddress;
+                selectedPlace = PlacePicker.getPlace(this, data);
 
                 if (currentLocation != null && selectedPlace != null) {
 
@@ -326,9 +301,10 @@ public class MainActivity extends AppCompatActivity {
                     selectedLocation.setLatitude(selectedPlace.getLatLng().latitude);
 
                     if (selectedLocation.distanceTo(currentLocation) > maxDistance) {
-                        Snackbar.make(findViewById(R.id.coordinator_layout), "Hey, do select nearby places, don't make it up!", Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(findViewById(R.id.coordinator_layout), R.string.select_nearby, Snackbar.LENGTH_LONG).show();
                     } else {
-                        listFragment.list.add(selectedPlace.getAddress().toString());
+                        displayNameAddress = new StringBuilder().append(selectedPlace.getName()).append(" - ").append(selectedPlace.getAddress()).toString();
+                        listFragment.list.add(displayNameAddress);
                         listFragment.mAdapter.notifyDataSetChanged();
                     }
                 }
